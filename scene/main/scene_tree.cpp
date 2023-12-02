@@ -74,6 +74,14 @@ void SceneTreeTimer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("timeout"));
 }
 
+void SceneTreeTimer::stop() {
+	stopped = true;
+}
+
+bool SceneTreeTimer::is_stopped() const {
+	return stopped;
+}
+
 void SceneTreeTimer::set_time_left(double p_time) {
 	time_left = p_time;
 }
@@ -562,6 +570,13 @@ void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
 
 	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
+
+		if (E->get()->is_stopped()) {
+			//timer got stopped, let's remove it.
+			timers.erase(E);
+			continue;
+		}
+
 		List<Ref<SceneTreeTimer>>::Element *N = E->next();
 		if ((paused && !E->get()->is_process_always()) || (E->get()->is_process_in_physics() != p_physics_frame)) {
 			if (E == L) {
